@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Генератор постов для Threads</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Генератор постов для Threads</h1>
+      <p class="subtitle">Экспертный блог · генерация через Grok (x.ai)</p>
+    </header>
+
+    <section class="card">
+      <h2>1. Выберите тему</h2>
+      <div class="topics" id="topics">
+        {% for key, topic in topics.items() %}
+        <button class="topic" data-topic="{{ key }}" type="button">
+          {{ topic.title }}
+        </button>
+        {% endfor %}
+      </div>
+
+      <h2>2. Пожелание к посту <span class="optional">(необязательно)</span></h2>
+      <input
+        id="extra"
+        type="text"
+        placeholder="Напр.: про делегирование, с примером из практики..."
+      />
+
+      <button id="generate" class="generate" type="button" disabled>
+        Сгенерировать пост
+      </button>
+    </section>
+
+    <section class="card result" id="result-card" hidden>
+      <div class="result-head">
+        <h2>Результат <span id="result-topic" class="badge"></span></h2>
+        <span id="char-count" class="char-count"></span>
+      </div>
+      <div class="post" id="post"></div>
+      <div class="actions">
+        <button id="copy" class="secondary" type="button">Скопировать</button>
+        <button id="regenerate" class="secondary" type="button">Ещё вариант</button>
+      </div>
+    </section>
+
+    <div id="error" class="error" hidden></div>
+    <div id="loader" class="loader" hidden>Grok генерирует пост…</div>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
