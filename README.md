@@ -34,6 +34,18 @@
 
 4. Откройте в браузере: **http://127.0.0.1:5000**
 
+## Публичная ссылка (деплой)
+
+> ⚠️ GitHub Pages НЕ подходит: это статический хостинг, он не запускает Python/Flask
+> и не может безопасно хранить ключ Grok. По ссылке Pages показывает только README.
+
+Приложение нужно разместить на хостинге, который запускает Python. Пример — [Render](https://render.com) (бесплатный план):
+
+1. На render.com → **New** → **Web Service** → подключите репозиторий `shaktiijee/Aproject`.
+2. Render сам подхватит `render.yaml` (build: `pip install -r requirements.txt`, start: `gunicorn`).
+3. В разделе **Environment** задайте переменную `XAI_API_KEY` = ваш ключ x.ai (ключ НЕ хранится в коде).
+4. Нажмите **Deploy** — получите публичную ссылку вида `https://threads-post-generator.onrender.com`.
+
 ## Настройки (`.env`)
 
 | Переменная    | Назначение                                   | По умолчанию |
