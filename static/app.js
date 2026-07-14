@@ -11,6 +11,19 @@ const resultTopicEl = document.getElementById("result-topic");
 const charCountEl = document.getElementById("char-count");
 const errorEl = document.getElementById("error");
 const loaderEl = document.getElementById("loader");
+const editBtn = document.getElementById("edit");
+const editorOverlay = document.getElementById("editor-overlay");
+const editorClose = document.getElementById("editor-close");
+const editorText = document.getElementById("editor-text");
+const editorTopic = document.getElementById("editor-topic");
+const editorCount = document.getElementById("editor-count");
+const editorCopy = document.getElementById("editor-copy");
+const editorSave = document.getElementById("editor-save");
+
+function setCount(el, value) {
+  el.textContent = `${value.length} / 500`;
+  el.classList.toggle("over", value.length > 500);
+}
 
 topicsEl.addEventListener("click", (e) => {
   const btn = e.target.closest(".topic");
@@ -44,8 +57,7 @@ async function generate() {
 
     postEl.textContent = data.post;
     resultTopicEl.textContent = data.topic;
-    charCountEl.textContent = `${data.length} / 500`;
-    charCountEl.classList.toggle("over", data.length > 500);
+    setCount(charCountEl, data.post);
     resultCard.hidden = false;
   } catch (err) {
     errorEl.textContent = err.message;
@@ -60,13 +72,45 @@ async function generate() {
 generateBtn.addEventListener("click", generate);
 regenerateBtn.addEventListener("click", generate);
 
-copyBtn.addEventListener("click", async () => {
+async function copyText(btn, text) {
   try {
-    await navigator.clipboard.writeText(postEl.textContent);
-    copyBtn.textContent = "Скопировано!";
-    setTimeout(() => (copyBtn.textContent = "Скопировать"), 1500);
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "Скопировано!";
   } catch (_) {
-    copyBtn.textContent = "Не удалось";
-    setTimeout(() => (copyBtn.textContent = "Скопировать"), 1500);
+    btn.textContent = "Не удалось";
   }
+  setTimeout(() => (btn.textContent = "Скопировать"), 1500);
+}
+
+copyBtn.addEventListener("click", () => copyText(copyBtn, postEl.textContent));
+editorCopy.addEventListener("click", () => copyText(editorCopy, editorText.value));
+
+function openEditor() {
+  editorText.value = postEl.textContent;
+  editorTopic.textContent = resultTopicEl.textContent;
+  setCount(editorCount, editorText.value);
+  editorOverlay.hidden = false;
+  editorText.focus();
+}
+
+function closeEditor() {
+  editorOverlay.hidden = true;
+}
+
+editBtn.addEventListener("click", openEditor);
+editorClose.addEventListener("click", closeEditor);
+editorText.addEventListener("input", () => setCount(editorCount, editorText.value));
+
+editorSave.addEventListener("click", () => {
+  postEl.textContent = editorText.value;
+  setCount(charCountEl, editorText.value);
+  closeEditor();
+});
+
+editorOverlay.addEventListener("click", (e) => {
+  if (e.target === editorOverlay) closeEditor();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !editorOverlay.hidden) closeEditor();
 });
