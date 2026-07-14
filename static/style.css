@@ -89,6 +89,11 @@ h2:not(:first-child) {
   border-color: var(--accent-2);
 }
 
+/* Image mode toggle has two longer-labelled buttons */
+#img-modes {
+  grid-template-columns: 1fr 1fr;
+}
+
 .topic.active {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   border-color: transparent;
@@ -225,6 +230,8 @@ h2:not(:first-child) {
   padding: 24px;
   width: 100%;
   max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-head {
@@ -419,4 +426,69 @@ h2:not(:first-child) {
 a.secondary {
   text-align: center;
   text-decoration: none;
+}
+
+/* Wrap action rows so buttons never overflow narrow screens */
+.actions {
+  flex-wrap: wrap;
+}
+
+.actions .secondary {
+  min-width: 0;
+}
+
+/* Mobile / small screens */
+@media (max-width: 560px) {
+  .container {
+    padding: 24px 14px 60px;
+  }
+
+  h1 {
+    font-size: 23px;
+  }
+
+  .card {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  /* Stack the three image parameters vertically for tap targets */
+  .params {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stack the two image-mode buttons */
+  #img-modes {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stack the "instruction + button" row in the editor */
+  .ai-edit-row {
+    flex-direction: column;
+  }
+
+  .ai-edit-row .generate.compact {
+    width: 100%;
+  }
+
+  /* Let the editor footer wrap instead of squeezing */
+  .editor-foot {
+    flex-wrap: wrap;
+  }
+
+  .editor-actions {
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .modal {
+    padding: 18px;
+  }
+}
+
+/* Very narrow phones: stack topic buttons */
+@media (max-width: 380px) {
+  .topics {
+    grid-template-columns: 1fr;
+  }
 }
