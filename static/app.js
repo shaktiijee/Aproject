@@ -160,3 +160,158 @@ editorOverlay.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !editorOverlay.hidden) closeEditor();
 });
+
+/* ---------- Tabs ---------- */
+const tabsEl = document.getElementById("tabs");
+const tabPanels = {
+  posts: document.getElementById("tab-posts"),
+  images: document.getElementById("tab-images"),
+};
+
+tabsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".tab");
+  if (!btn) return;
+  document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+  btn.classList.add("active");
+  const tab = btn.dataset.tab;
+  Object.entries(tabPanels).forEach(([name, panel]) => {
+    panel.hidden = name !== tab;
+  });
+});
+
+/* ---------- Image generation (WaveSpeed / Nano Banana Pro) ---------- */
+let imgMode = "generate";
+let uploadedImage = null; // data URI of source image for edit
+
+const imgModesEl = document.getElementById("img-modes");
+const imgUploadBlock = document.getElementById("img-upload-block");
+const imgFile = document.getElementById("img-file");
+const imgPreview = document.getElementById("img-preview");
+const imgPromptLabel = document.getElementById("img-prompt-label");
+const imgPrompt = document.getElementById("img-prompt");
+const imgAspect = document.getElementById("img-aspect");
+const imgResolution = document.getElementById("img-resolution");
+const imgFormat = document.getElementById("img-format");
+const imgGenerateBtn = document.getElementById("img-generate");
+const imgResultCard = document.getElementById("img-result-card");
+const imgResult = document.getElementById("img-result");
+const imgResultBadge = document.getElementById("img-result-badge");
+const imgDownload = document.getElementById("img-download");
+const imgUseAsInput = document.getElementById("img-use-as-input");
+const imgError = document.getElementById("img-error");
+const imgLoader = document.getElementById("img-loader");
+
+function setImgMode(mode) {
+  imgMode = mode;
+  document.querySelectorAll("#img-modes .topic").forEach((b) => {
+    b.classList.toggle("active", b.dataset.mode === mode);
+  });
+  imgUploadBlock.hidden = mode !== "edit";
+  if (mode === "edit") {
+    imgPromptLabel.textContent = "2. Что изменить";
+    imgPrompt.placeholder = "Напр.: сделай фон синим, добавь текст сверху...";
+    imgGenerateBtn.textContent = "Изменить изображение";
+  } else {
+    imgPromptLabel.textContent = "2. Описание";
+    imgPrompt.placeholder =
+      "Напр.: минималистичная иллюстрация лампочки, плоский дизайн, светлый фон";
+    imgGenerateBtn.textContent = "Сгенерировать изображение";
+  }
+}
+
+imgModesEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".topic");
+  if (!btn) return;
+  setImgMode(btn.dataset.mode);
+});
+
+imgFile.addEventListener("change", () => {
+  const file = imgFile.files[0];
+  if (!file) {
+    uploadedImage = null;
+    imgPreview.hidden = true;
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    uploadedImage = reader.result; // data:image/...;base64,...
+    imgPreview.src = uploadedImage;
+    imgPreview.hidden = false;
+  };
+  reader.readAsDataURL(file);
+});
+
+async function generateImage() {
+  const prompt = imgPrompt.value.trim();
+  if (!prompt) {
+    imgError.textContent =
+      imgMode === "edit"
+        ? "Опишите, что изменить в изображении."
+        : "Опишите, какое изображение сгенерировать.";
+    imgError.hidden = false;
+    return;
+  }
+  if (imgMode === "edit" && !uploadedImage) {
+    imgError.textContent = "Загрузите исходное изображение.";
+    imgError.hidden = false;
+    return;
+  }
+
+  imgError.hidden = true;
+  imgResultCard.hidden = true;
+  imgLoader.hidden = false;
+  imgGenerateBtn.disabled = true;
+
+  const params = {
+    prompt,
+    aspect_ratio: imgAspect.value,
+    resolution: imgResolution.value,
+    output_format: imgFormat.value,
+  };
+  const url = imgMode === "edit" ? "/api/image/edit" : "/api/image/generate";
+  if (imgMode === "edit") params.image = uploadedImage;
+
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "Неизвестная ошибка");
+
+    imgResult.src = data.url;
+    imgDownload.href = data.url;
+    imgDownload.download = `threads-image.${imgFormat.value}`;
+    imgResultBadge.textContent = `${imgAspect.value} · ${imgResolution.value}`;
+    imgResultCard.hidden = false;
+  } catch (err) {
+    imgError.textContent = err.message;
+    imgError.hidden = false;
+  } finally {
+    imgLoader.hidden = true;
+    imgGenerateBtn.disabled = false;
+  }
+}
+
+imgGenerateBtn.addEventListener("click", generateImage);
+
+imgUseAsInput.addEventListener("click", async () => {
+  try {
+    const resp = await fetch(imgResult.src);
+    const blob = await resp.blob();
+    const reader = new FileReader();
+    reader.onload = () => {
+      uploadedImage = reader.result;
+      imgPreview.src = uploadedImage;
+      imgPreview.hidden = false;
+      setImgMode("edit");
+      imgPrompt.value = "";
+      imgPrompt.focus();
+    };
+    reader.readAsDataURL(blob);
+  } catch (_) {
+    imgError.textContent = "Не удалось загрузить изображение для редактирования.";
+    imgError.hidden = false;
+  }
+});

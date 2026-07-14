@@ -9,47 +9,128 @@
 <body>
   <main class="container">
     <header>
-      <h1>Генератор постов для Threads</h1>
-      <p class="subtitle">Экспертный блог · генерация через Grok 4.5 (x.ai)</p>
+      <h1>Генератор для Threads</h1>
+      <p class="subtitle">Посты через Grok 4.5 · изображения через Nano Banana Pro</p>
     </header>
 
-    <section class="card">
-      <h2>1. Выберите тему</h2>
-      <div class="topics" id="topics">
-        {% for key, topic in topics.items() %}
-        <button class="topic" data-topic="{{ key }}" type="button">
-          {{ topic.title }}
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="posts" type="button">Посты</button>
+      <button class="tab" data-tab="images" type="button">Изображения</button>
+    </div>
+
+    <div id="tab-posts" class="tab-panel">
+      <section class="card">
+        <h2>1. Выберите тему</h2>
+        <div class="topics" id="topics">
+          {% for key, topic in topics.items() %}
+          <button class="topic" data-topic="{{ key }}" type="button">
+            {{ topic.title }}
+          </button>
+          {% endfor %}
+        </div>
+
+        <h2>2. Пожелание к посту <span class="optional">(необязательно)</span></h2>
+        <input
+          id="extra"
+          type="text"
+          placeholder="Напр.: про делегирование, с примером из практики..."
+        />
+
+        <button id="generate" class="generate" type="button" disabled>
+          Сгенерировать пост
         </button>
-        {% endfor %}
-      </div>
+      </section>
 
-      <h2>2. Пожелание к посту <span class="optional">(необязательно)</span></h2>
-      <input
-        id="extra"
-        type="text"
-        placeholder="Напр.: про делегирование, с примером из практики..."
-      />
+      <section class="card result" id="result-card" hidden>
+        <div class="result-head">
+          <h2>Результат <span id="result-topic" class="badge"></span></h2>
+          <span id="char-count" class="char-count"></span>
+        </div>
+        <div class="post" id="post"></div>
+        <div class="actions">
+          <button id="edit" class="secondary" type="button">Редактировать</button>
+          <button id="copy" class="secondary" type="button">Скопировать</button>
+          <button id="regenerate" class="secondary" type="button">Ещё вариант</button>
+        </div>
+      </section>
 
-      <button id="generate" class="generate" type="button" disabled>
-        Сгенерировать пост
-      </button>
-    </section>
+      <div id="error" class="error" hidden></div>
+      <div id="loader" class="loader" hidden>Grok генерирует пост…</div>
+    </div>
 
-    <section class="card result" id="result-card" hidden>
-      <div class="result-head">
-        <h2>Результат <span id="result-topic" class="badge"></span></h2>
-        <span id="char-count" class="char-count"></span>
-      </div>
-      <div class="post" id="post"></div>
-      <div class="actions">
-        <button id="edit" class="secondary" type="button">Редактировать</button>
-        <button id="copy" class="secondary" type="button">Скопировать</button>
-        <button id="regenerate" class="secondary" type="button">Ещё вариант</button>
-      </div>
-    </section>
+    <div id="tab-images" class="tab-panel" hidden>
+      <section class="card">
+        <h2>1. Режим</h2>
+        <div class="topics" id="img-modes">
+          <button class="topic active" data-mode="generate" type="button">
+            Текст → изображение
+          </button>
+          <button class="topic" data-mode="edit" type="button">
+            Редактировать изображение
+          </button>
+        </div>
 
-    <div id="error" class="error" hidden></div>
-    <div id="loader" class="loader" hidden>Grok генерирует пост…</div>
+        <div id="img-upload-block" hidden>
+          <h2>Исходное изображение</h2>
+          <input id="img-file" type="file" accept="image/*" />
+          <img id="img-preview" class="img-preview" alt="Превью" hidden />
+        </div>
+
+        <h2 id="img-prompt-label">2. Описание</h2>
+        <textarea
+          id="img-prompt"
+          class="editor-text short"
+          spellcheck="true"
+          placeholder="Напр.: минималистичная иллюстрация лампочки, плоский дизайн, светлый фон"
+        ></textarea>
+
+        <h2>Параметры</h2>
+        <div class="params">
+          <label class="param">
+            Соотношение сторон
+            <select id="img-aspect">
+              {% for ar in aspect_ratios %}
+              <option value="{{ ar }}" {% if ar == default_aspect_ratio %}selected{% endif %}>{{ ar }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="param">
+            Разрешение
+            <select id="img-resolution">
+              {% for r in resolutions %}
+              <option value="{{ r }}" {% if r == default_resolution %}selected{% endif %}>{{ r }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="param">
+            Формат
+            <select id="img-format">
+              {% for f in output_formats %}
+              <option value="{{ f }}" {% if f == default_output_format %}selected{% endif %}>{{ f }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+
+        <button id="img-generate" class="generate" type="button">
+          Сгенерировать изображение
+        </button>
+      </section>
+
+      <section class="card result" id="img-result-card" hidden>
+        <div class="result-head">
+          <h2>Изображение <span id="img-result-badge" class="badge"></span></h2>
+        </div>
+        <img id="img-result" class="img-result" alt="Результат" />
+        <div class="actions">
+          <a id="img-download" class="secondary" download="threads-image.png" href="#">Скачать</a>
+          <button id="img-use-as-input" class="secondary" type="button">Редактировать это</button>
+        </div>
+      </section>
+
+      <div id="img-error" class="error" hidden></div>
+      <div id="img-loader" class="loader" hidden>Nano Banana Pro генерирует изображение… (до ~40 сек)</div>
+    </div>
   </main>
 
   <div id="editor-overlay" class="overlay" hidden>

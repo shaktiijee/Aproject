@@ -8,6 +8,8 @@ services:
     envVars:
       - key: XAI_API_KEY
         sync: false
+      - key: WAVESPEED_API_KEY
+        sync: false
       - key: XAI_MODEL
         value: grok-4.5
       - key: PYTHON_VERSION
