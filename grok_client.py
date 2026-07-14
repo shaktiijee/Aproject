@@ -66,33 +66,25 @@ def _build_prompt(topic_key: str, extra_instruction: str | None = None) -> tuple
     return system_prompt, user_prompt
 
 
-def generate_post(
-    topic_key: str,
-    extra_instruction: str | None = None,
-    api_key: str | None = None,
-    model: str | None = None,
-    timeout: int = 60,
-) -> str:
-    """Сгенерировать текст поста для Threads по выбранной теме."""
-    if topic_key not in TOPICS:
-        raise GrokError(f"Неизвестная тема: {topic_key}")
-
+def _resolve_api_key(api_key: str | None) -> str:
     api_key = api_key or os.getenv("XAI_API_KEY")
     if not api_key:
         raise GrokError(
             "Не задан XAI_API_KEY. Добавьте ключ в файл .env "
             "(см. .env.example). Ключ можно получить на https://console.x.ai"
         )
+    return api_key
 
-    model = model or DEFAULT_MODEL
-    system_prompt, user_prompt = _build_prompt(topic_key, extra_instruction)
 
+def _call_grok(
+    messages: list[dict[str, str]],
+    api_key: str,
+    model: str,
+    timeout: int,
+) -> str:
     payload = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
+        "messages": messages,
         "temperature": 0.9,
         "max_tokens": 800,
     }
@@ -118,3 +110,74 @@ def generate_post(
         raise GrokError(f"Неожиданный ответ от Grok API: {exc}") from exc
 
     return content
+
+
+def generate_post(
+    topic_key: str,
+    extra_instruction: str | None = None,
+    api_key: str | None = None,
+    model: str | None = None,
+    timeout: int = 60,
+) -> str:
+    """Сгенерировать текст поста для Threads по выбранной теме."""
+    if topic_key not in TOPICS:
+        raise GrokError(f"Неизвестная тема: {topic_key}")
+
+    api_key = _resolve_api_key(api_key)
+    model = model or DEFAULT_MODEL
+    system_prompt, user_prompt = _build_prompt(topic_key, extra_instruction)
+
+    return _call_grok(
+        [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        api_key=api_key,
+        model=model,
+        timeout=timeout,
+    )
+
+
+def edit_post(
+    base_post: str,
+    instruction: str,
+    api_key: str | None = None,
+    model: str | None = None,
+    timeout: int = 60,
+) -> str:
+    """Переписать существующий пост по указанию пользователя (базой служит base_post)."""
+    base_post = (base_post or "").strip()
+    instruction = (instruction or "").strip()
+    if not base_post:
+        raise GrokError("Нет исходного поста для редактирования.")
+    if not instruction:
+        raise GrokError("Опишите, что изменить в посте.")
+
+    api_key = _resolve_api_key(api_key)
+    model = model or DEFAULT_MODEL
+
+    system_prompt = (
+        "Ты — редактор постов для соцсети Threads. Тебе дают ГОТОВЫЙ пост "
+        "и указание, что в нём изменить. Перепиши пост с учётом указания, "
+        "сохраняя исходную тему и смысл, если об обратном не просят.\n"
+        "Требования к результату:\n"
+        "- на русском языке;\n"
+        "- не длиннее 480 символов (лимит Threads — 500);\n"
+        "- живой, экспертный, но человечный тон;\n"
+        "- без markdown-разметки и без кавычек вокруг всего поста.\n"
+        "Верни ТОЛЬКО итоговый текст поста, без пояснений."
+    )
+    user_prompt = (
+        f"Вот текущий пост:\n\n{base_post}\n\n"
+        f"Внеси изменение: {instruction}"
+    )
+
+    return _call_grok(
+        [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        api_key=api_key,
+        model=model,
+        timeout=timeout,
+    )

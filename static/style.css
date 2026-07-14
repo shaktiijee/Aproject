@@ -202,3 +202,122 @@ h2:not(:first-child) {
   color: var(--muted);
   padding: 14px;
 }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 640px;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.modal-head h2 {
+  margin: 0;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+}
+
+.editor-text {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #21252e;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.55;
+  font-family: inherit;
+}
+
+.editor-text:focus {
+  outline: none;
+  border-color: var(--accent-2);
+}
+
+.editor-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  gap: 12px;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.generate.compact {
+  width: auto;
+  margin-top: 0;
+  padding: 12px 22px;
+  font-size: 14px;
+}
+
+.ai-edit {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.ai-edit-label {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.ai-edit-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ai-edit-row input {
+  flex: 1;
+}
+
+.ai-edit-row .generate.compact {
+  white-space: nowrap;
+}
+
+.ai-edit .loader,
+.ai-edit .error {
+  margin-top: 10px;
+}

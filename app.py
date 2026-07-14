@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 
-from grok_client import TOPICS, GrokError, generate_post
+from grok_client import TOPICS, GrokError, edit_post, generate_post
 
 load_dotenv()
 
@@ -40,6 +40,20 @@ def api_generate():
         return jsonify({"error": str(exc)}), 502
 
     return jsonify({"post": post, "length": len(post), "topic": TOPICS[topic]["title"]})
+
+
+@app.route("/api/edit", methods=["POST"])
+def api_edit():
+    data = request.get_json(silent=True) or {}
+    base_post = data.get("post")
+    instruction = data.get("instruction")
+
+    try:
+        post = edit_post(base_post, instruction)
+    except GrokError as exc:
+        return jsonify({"error": str(exc)}), 502
+
+    return jsonify({"post": post, "length": len(post)})
 
 
 if __name__ == "__main__":

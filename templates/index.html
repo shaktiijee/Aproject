@@ -10,7 +10,7 @@
   <main class="container">
     <header>
       <h1>Генератор постов для Threads</h1>
-      <p class="subtitle">Экспертный блог · генерация через Grok (x.ai)</p>
+      <p class="subtitle">Экспертный блог · генерация через Grok 4.5 (x.ai)</p>
     </header>
 
     <section class="card">
@@ -42,6 +42,7 @@
       </div>
       <div class="post" id="post"></div>
       <div class="actions">
+        <button id="edit" class="secondary" type="button">Редактировать</button>
         <button id="copy" class="secondary" type="button">Скопировать</button>
         <button id="regenerate" class="secondary" type="button">Ещё вариант</button>
       </div>
@@ -50,6 +51,42 @@
     <div id="error" class="error" hidden></div>
     <div id="loader" class="loader" hidden>Grok генерирует пост…</div>
   </main>
+
+  <div id="editor-overlay" class="overlay" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Редактирование поста <span id="editor-topic" class="badge"></span></h2>
+        <button id="editor-close" class="icon-btn" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <textarea id="editor-text" class="editor-text" spellcheck="true"></textarea>
+
+      <div class="ai-edit">
+        <label class="ai-edit-label" for="editor-instruction">
+          Изменить с помощью Grok <span class="optional">(на основе этого поста)</span>
+        </label>
+        <div class="ai-edit-row">
+          <input
+            id="editor-instruction"
+            type="text"
+            placeholder="Напр.: сделай короче, добавь пример, смени тон на дружелюбный..."
+          />
+          <button id="editor-ai" class="generate compact" type="button">
+            Изменить через Grok
+          </button>
+        </div>
+        <div id="editor-loader" class="loader" hidden>Grok редактирует пост…</div>
+        <div id="editor-error" class="error" hidden></div>
+      </div>
+
+      <div class="editor-foot">
+        <span id="editor-count" class="char-count"></span>
+        <div class="editor-actions">
+          <button id="editor-copy" class="secondary" type="button">Скопировать</button>
+          <button id="editor-save" class="generate compact" type="button">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
