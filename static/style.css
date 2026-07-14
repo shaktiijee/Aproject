@@ -290,3 +290,34 @@ h2:not(:first-child) {
   padding: 12px 22px;
   font-size: 14px;
 }
+
+.ai-edit {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.ai-edit-label {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.ai-edit-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ai-edit-row input {
+  flex: 1;
+}
+
+.ai-edit-row .generate.compact {
+  white-space: nowrap;
+}
+
+.ai-edit .loader,
+.ai-edit .error {
+  margin-top: 10px;
+}

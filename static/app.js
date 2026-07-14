@@ -19,6 +19,10 @@ const editorTopic = document.getElementById("editor-topic");
 const editorCount = document.getElementById("editor-count");
 const editorCopy = document.getElementById("editor-copy");
 const editorSave = document.getElementById("editor-save");
+const editorInstruction = document.getElementById("editor-instruction");
+const editorAiBtn = document.getElementById("editor-ai");
+const editorLoader = document.getElementById("editor-loader");
+const editorError = document.getElementById("editor-error");
 
 function setCount(el, value) {
   el.textContent = `${value.length} / 500`;
@@ -88,9 +92,44 @@ editorCopy.addEventListener("click", () => copyText(editorCopy, editorText.value
 function openEditor() {
   editorText.value = postEl.textContent;
   editorTopic.textContent = resultTopicEl.textContent;
+  editorInstruction.value = "";
+  editorError.hidden = true;
   setCount(editorCount, editorText.value);
   editorOverlay.hidden = false;
   editorText.focus();
+}
+
+async function aiEdit() {
+  const instruction = editorInstruction.value.trim();
+  if (!instruction) {
+    editorError.textContent = "Опишите, что изменить в посте.";
+    editorError.hidden = false;
+    return;
+  }
+
+  editorError.hidden = true;
+  editorLoader.hidden = false;
+  editorAiBtn.disabled = true;
+
+  try {
+    const resp = await fetch("/api/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post: editorText.value, instruction }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "Неизвестная ошибка");
+
+    editorText.value = data.post;
+    setCount(editorCount, editorText.value);
+    editorInstruction.value = "";
+  } catch (err) {
+    editorError.textContent = err.message;
+    editorError.hidden = false;
+  } finally {
+    editorLoader.hidden = true;
+    editorAiBtn.disabled = false;
+  }
 }
 
 function closeEditor() {
@@ -100,6 +139,13 @@ function closeEditor() {
 editBtn.addEventListener("click", openEditor);
 editorClose.addEventListener("click", closeEditor);
 editorText.addEventListener("input", () => setCount(editorCount, editorText.value));
+editorAiBtn.addEventListener("click", aiEdit);
+editorInstruction.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    aiEdit();
+  }
+});
 
 editorSave.addEventListener("click", () => {
   postEl.textContent = editorText.value;

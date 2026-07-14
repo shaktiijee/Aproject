@@ -59,6 +59,25 @@
         <button id="editor-close" class="icon-btn" type="button" aria-label="Закрыть">×</button>
       </div>
       <textarea id="editor-text" class="editor-text" spellcheck="true"></textarea>
+
+      <div class="ai-edit">
+        <label class="ai-edit-label" for="editor-instruction">
+          Изменить с помощью Grok <span class="optional">(на основе этого поста)</span>
+        </label>
+        <div class="ai-edit-row">
+          <input
+            id="editor-instruction"
+            type="text"
+            placeholder="Напр.: сделай короче, добавь пример, смени тон на дружелюбный..."
+          />
+          <button id="editor-ai" class="generate compact" type="button">
+            Изменить через Grok
+          </button>
+        </div>
+        <div id="editor-loader" class="loader" hidden>Grok редактирует пост…</div>
+        <div id="editor-error" class="error" hidden></div>
+      </div>
+
       <div class="editor-foot">
         <span id="editor-count" class="char-count"></span>
         <div class="editor-actions">
