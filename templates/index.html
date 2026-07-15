@@ -29,7 +29,17 @@
           {% endfor %}
         </div>
 
-        <h2>2. Пожелание к посту <span class="optional">(необязательно)</span></h2>
+        <h2>2. Выберите роль <span class="optional">(необязательно)</span></h2>
+        <div class="roles" id="roles">
+          {% for key, role in roles.items() %}
+          <button class="role" data-role="{{ key }}" type="button" title="{{ role.persona }}">
+            <span class="role-title">{{ role.title }}</span>
+            <span class="role-tagline">{{ role.tagline }}</span>
+          </button>
+          {% endfor %}
+        </div>
+
+        <h2>3. Пожелание к посту <span class="optional">(необязательно)</span></h2>
         <input
           id="extra"
           type="text"

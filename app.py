@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 
-from grok_client import TOPICS, GrokError, edit_post, generate_post
+from grok_client import ROLES, TOPICS, GrokError, edit_post, generate_post
 from wavespeed_client import (
     ASPECT_RATIOS,
     DEFAULT_ASPECT_RATIO,
@@ -29,6 +29,7 @@ def index():
     return render_template(
         "index.html",
         topics=TOPICS,
+        roles=ROLES,
         aspect_ratios=ASPECT_RATIOS,
         resolutions=RESOLUTIONS,
         output_formats=OUTPUT_FORMATS,
@@ -50,16 +51,26 @@ def api_generate():
     data = request.get_json(silent=True) or {}
     topic = data.get("topic")
     extra = data.get("extra")
+    role = data.get("role")
 
     if topic not in TOPICS:
         return jsonify({"error": "Выберите одну из доступных тем."}), 400
+    if role and role not in ROLES:
+        return jsonify({"error": "Выбрана недоступная роль."}), 400
 
     try:
-        post = generate_post(topic, extra_instruction=extra)
+        post = generate_post(topic, extra_instruction=extra, role_key=role)
     except GrokError as exc:
         return jsonify({"error": str(exc)}), 502
 
-    return jsonify({"post": post, "length": len(post), "topic": TOPICS[topic]["title"]})
+    return jsonify(
+        {
+            "post": post,
+            "length": len(post),
+            "topic": TOPICS[topic]["title"],
+            "role": ROLES[role]["title"] if role in ROLES else None,
+        }
+    )
 
 
 @app.route("/api/edit", methods=["POST"])

@@ -1,6 +1,8 @@
 let selectedTopic = null;
+let selectedRole = null;
 
 const topicsEl = document.getElementById("topics");
+const rolesEl = document.getElementById("roles");
 const generateBtn = document.getElementById("generate");
 const regenerateBtn = document.getElementById("regenerate");
 const copyBtn = document.getElementById("copy");
@@ -32,10 +34,24 @@ function setCount(el, value) {
 topicsEl.addEventListener("click", (e) => {
   const btn = e.target.closest(".topic");
   if (!btn) return;
-  document.querySelectorAll(".topic").forEach((b) => b.classList.remove("active"));
+  topicsEl.querySelectorAll(".topic").forEach((b) => b.classList.remove("active"));
   btn.classList.add("active");
   selectedTopic = btn.dataset.topic;
   generateBtn.disabled = false;
+});
+
+rolesEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".role");
+  if (!btn) return;
+  // Повторный клик по активной роли снимает выбор (роль необязательна).
+  if (btn.dataset.role === selectedRole) {
+    btn.classList.remove("active");
+    selectedRole = null;
+    return;
+  }
+  rolesEl.querySelectorAll(".role").forEach((b) => b.classList.remove("active"));
+  btn.classList.add("active");
+  selectedRole = btn.dataset.role;
 });
 
 async function generate() {
@@ -51,7 +67,11 @@ async function generate() {
     const resp = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic: selectedTopic, extra: extraEl.value }),
+      body: JSON.stringify({
+        topic: selectedTopic,
+        role: selectedRole,
+        extra: extraEl.value,
+      }),
     });
     const data = await resp.json();
 
@@ -60,7 +80,7 @@ async function generate() {
     }
 
     postEl.textContent = data.post;
-    resultTopicEl.textContent = data.topic;
+    resultTopicEl.textContent = data.role ? `${data.topic} · ${data.role}` : data.topic;
     setCount(charCountEl, data.post);
     resultCard.hidden = false;
   } catch (err) {
