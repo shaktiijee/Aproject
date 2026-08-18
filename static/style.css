@@ -74,6 +74,10 @@ h2:not(:first-child) {
   gap: 10px;
 }
 
+#topics {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
 .topic {
   padding: 16px 10px;
   border-radius: 12px;
@@ -537,7 +541,8 @@ a.secondary {
 
 /* Very narrow phones: stack topic buttons */
 @media (max-width: 380px) {
-  .topics {
+  .topics,
+  #topics {
     grid-template-columns: 1fr;
   }
 }
